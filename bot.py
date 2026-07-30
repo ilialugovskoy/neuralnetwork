@@ -1,14 +1,12 @@
-import os, logging, requests, json, random, time, asyncio, threading
-from flask import Flask
+import os, logging, requests, json, random, time
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 
-# ==================== КЛЮЧИ БЕРУТСЯ ИЗ ПЕРЕМЕННЫХ ОКРУЖЕНИЯ ====================
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 GROQ_KEY = os.environ.get("GROQ_KEY")
 
 if not TELEGRAM_TOKEN or not GROQ_KEY:
-    print("❌ Ошибка: TELEGRAM_TOKEN или GROQ_KEY не найдены в переменных окружения!")
+    print("❌ Ошибка: TELEGRAM_TOKEN или GROQ_KEY не найдены!")
     exit(1)
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -132,7 +130,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await handle_ask(update, context)
 
-def run_bot():
+def main():
+    print("🚀 Запуск бота...")
     app = Application.builder().token(TELEGRAM_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("ask", handle_ask))
@@ -141,19 +140,8 @@ def run_bot():
     app.add_handler(CommandHandler("stats", handle_stats))
     app.add_handler(CallbackQueryHandler(button_callback))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    print("✅ Бот запущен!")
+    print("✅ Бот запущен и готов к работе!")
     app.run_polling()
 
-flask_app = Flask(__name__)
-@flask_app.route('/')
-def index():
-    return "🤖 Бот работает! ✅"
-@flask_app.route('/health')
-def health():
-    return "OK", 200
-
 if __name__ == "__main__":
-    bot_thread = threading.Thread(target=run_bot)
-    bot_thread.start()
-    port = int(os.environ.get("PORT", 5000))
-    flask_app.run(host='0.0.0.0', port=port)
+    main()
